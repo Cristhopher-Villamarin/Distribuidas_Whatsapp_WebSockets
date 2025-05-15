@@ -48,70 +48,74 @@ export const Chat: React.FC = () => {
 
     // Conexión al servidor Socket.IO
     useEffect(() => {
-        if (!nickname) return;
+    if (!nickname) return;
 
-        console.log("Intentando conectar a:", SOCKET_SERVER_URL);
-        socketRef.current = io(SOCKET_SERVER_URL, {
-            transports: ['websocket', 'polling'],
-            withCredentials: true,
-        });
+    console.log("Intentando conectar a:", SOCKET_SERVER_URL);
+    socketRef.current = io(SOCKET_SERVER_URL, {
+        transports: ['websocket', 'polling'],
+        withCredentials: true,
+    });
 
-        socketRef.current.on('connect', () => {
-            console.log("Conectado al servidor Socket.IO");
-            setConnected(true);
-            setConnectionError('');
-        });
+    socketRef.current.on('connect', () => {
+        console.log("Conectado al servidor Socket.IO");
+        setConnected(true);
+        setConnectionError('');
+    });
 
-        socketRef.current.on('connect_error', (error: any) => {
-            console.error("Error de conexión:", error);
-            setConnectionError(`Error de conexión: ${error.message}`);
-            setConnected(false);
-        });
+    socketRef.current.on('connect_error', (error: any) => {
+        console.error("Error de conexión:", error);
+        setConnectionError(`Error de conexión: ${error.message}`);
+        setConnected(false);
+    });
 
-        socketRef.current.on('connection_error', (data: { error: string }) => {
-            console.error("Error de conexión por IP:", data.error);
-            setConnectionError(data.error);
-            setConnected(false);
-            // Resetear completamente al estado inicial
-            setNickname('');
-            setRoomPin('');
-            setMessages([]);
-            setUserCount(0);
-            setRoomLimit(0);
-            localStorage.removeItem('currentRoom');
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
-        });
+    socketRef.current.on('connection_error', (data: { error: string }) => {
+        console.error("Error de conexión por IP:", data.error);
+        setConnectionError(data.error);
+        setConnected(false);
+        // Resetear completamente al estado inicial
+        setNickname('');
+        setRoomPin('');
+        setMessages([]);
+        setUserCount(0);
+        setRoomLimit(0);
+        localStorage.removeItem('currentRoom');
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+        }
+    });
 
-        socketRef.current.on('host_info', (data: HostInfo) => {
-            console.log("Información del host recibida:", data);
-            setHostInfo(data);
-        });
+    socketRef.current.on('host_info', (data: HostInfo) => {
+        console.log("Información del host recibida:", data);
+        setHostInfo(data);
+    });
 
-        socketRef.current.on('receive_message', (data: Message) => {
-            console.log("Mensaje recibido:", data);
+    socketRef.current.on('receive_message', (data: Message) => {
+        console.log("Mensaje recibido:", data);
+        // Solo agregar el mensaje si no es del usuario actual
+        if (data.autor !== nickname) {
             setMessages((prev: Message[]) => [...prev, data]);
-        });
+        }
+    });
 
-        socketRef.current.on('user_count', ({ count, limit }: { count: number, limit: number }) => {
-            setUserCount(count);
-            setRoomLimit(limit);
-        });
+    socketRef.current.on('user_count', ({ count, limit }: { count: number, limit: number }) => {
+        setUserCount(count);
+        setRoomLimit(limit);
+    });
 
-        socketRef.current.on('room_created', ({ pin, limit }: { pin: string, limit: number }) => {
-            setRoomPin(pin);
-            setRoomLimit(limit);
-            localStorage.setItem('currentRoom', pin);
-        });
+    socketRef.current.on('room_created', ({ pin, limit }: { pin: string, limit: number }) => {
+        setRoomPin(pin);
+        setRoomLimit(limit);
+        localStorage.setItem('currentRoom', pin);
+    });
 
-        return () => {
-            console.log("Desconectando socket");
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
-        };
-    }, [nickname]);
+    return () => {
+        console.log("Desconectando socket");
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+        }
+    };
+}, [nickname]);
+
 
     const handleNickname = () => {
         const nick = tempNickname.trim();

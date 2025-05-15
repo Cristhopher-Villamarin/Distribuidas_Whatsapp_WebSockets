@@ -8,7 +8,7 @@ const os = require('os');
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://192.168.68.108:3000'];
+const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://192.168.1.7:3000'];
 app.use(cors({
     origin: corsOrigin,
     credentials: true
