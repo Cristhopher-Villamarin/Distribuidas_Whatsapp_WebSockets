@@ -29,7 +29,7 @@ export const Chat: React.FC = () => {
     const [participantLimit, setParticipantLimit] = useState<string>('5');
     const [connected, setConnected] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('');
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]); // Corregido: Eliminado "Fleming"
     const [hostInfo, setHostInfo] = useState<HostInfo | null>(null);
     const [userCount, setUserCount] = useState<number>(0);
     const [roomLimit, setRoomLimit] = useState<number>(0);
@@ -59,7 +59,10 @@ export const Chat: React.FC = () => {
         if (!nickname) return;
 
         console.log("Intentando conectar a:", SOCKET_SERVER_URL);
-        socketRef.current = io(SOCKET_SERVER_URL);
+        socketRef.current = io(SOCKET_SERVER_URL, {
+            transports: ['websocket', 'polling'],
+            withCredentials: true,
+        });
 
         socketRef.current.on('connect', () => {
             console.log("Conectado al servidor Socket.IO");
@@ -73,6 +76,17 @@ export const Chat: React.FC = () => {
             setConnected(false);
         });
 
+        socketRef.current.on('connection_error', (data: { error: string }) => {
+            console.error("Error de conexión por IP:", data.error);
+            setConnectionError(data.error);
+            setConnected(false);
+            // Resetear estado para evitar intentos adicionales
+            setNickname('');
+            setRoomPin('');
+            localStorage.removeItem('currentRoom');
+            alert(data.error); // Mostrar alerta al usuario
+        });
+
         socketRef.current.on('host_info', (data: HostInfo) => {
             console.log("Información del host recibida:", data);
             setHostInfo(data);
@@ -80,7 +94,7 @@ export const Chat: React.FC = () => {
 
         socketRef.current.on('receive_message', (data: Message) => {
             console.log("Mensaje recibido:", data);
-            setMessages((prev) => [...prev, data]);
+            setMessages((prev: Message[]) => [...prev, data]); // Tipado explícito para prev
         });
 
         socketRef.current.on('user_count', ({ count, limit }: { count: number, limit: number }) => {
@@ -96,7 +110,9 @@ export const Chat: React.FC = () => {
 
         return () => {
             console.log("Desconectando socket");
-            socketRef.current.disconnect();
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
         };
     }, [nickname]);
 
@@ -109,6 +125,7 @@ export const Chat: React.FC = () => {
         setNickname(nick);
         setTempNickname('');
         setError('');
+        setConnectionError(''); // Limpiar error de conexión al intentar de nuevo
     };
 
     const createRoom = () => {
@@ -153,7 +170,7 @@ export const Chat: React.FC = () => {
             message: message.trim(),
         };
         socketRef.current.emit('send_message', msg);
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev: Message[]) => [...prev, msg]); // Tipado explícito para prev
         setMessage('');
         setError('');
     };
@@ -164,9 +181,12 @@ export const Chat: React.FC = () => {
         setMessages([]);
         setUserCount(0);
         setRoomLimit(0);
-        socketRef.current.disconnect();
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+        }
         setConnected(false);
         setNickname('');
+        setConnectionError('');
     };
 
     // Pantalla de ingreso de nickname
@@ -174,6 +194,7 @@ export const Chat: React.FC = () => {
         return (
             <div className="app">
                 <Card title="Bienvenido al Chat">
+                    {connectionError && <div className="error-message">{connectionError}</div>}
                     <div className="p-fluid">
                         <div className="p-field p-mb-3">
                             <label htmlFor="txtNickname">Nickname</label>
@@ -275,7 +296,7 @@ export const Chat: React.FC = () => {
                     {messages.length === 0 ? (
                         <p className="no-messages">No hay mensajes aún</p>
                     ) : (
-                        messages.map((m, i) => (
+                        messages.map((m: Message, i: number) => ( // Tipado explícito para m e i
                             <p
                                 key={i}
                                 className={`message ${m.autor === nickname ? 'my-message' : 'other-message'}`}
