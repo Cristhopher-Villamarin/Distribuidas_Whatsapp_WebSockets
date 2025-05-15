@@ -8,8 +8,7 @@ const os = require('os');
 
 const app = express();
 
-// Configuración de CORS
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://192.168.68.108:3000'];
 app.use(cors({
     origin: corsOrigin,
     credentials: true
@@ -179,7 +178,8 @@ io.on('connection', (socket) => {
 });
 
 // Iniciar servidor
+// Iniciar servidor en 0.0.0.0 y puerto 3001
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor ejecutándose en 0.0.0.0:${PORT}`);
 });
