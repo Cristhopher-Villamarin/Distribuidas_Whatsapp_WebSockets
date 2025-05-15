@@ -29,7 +29,7 @@ export const Chat: React.FC = () => {
     const [participantLimit, setParticipantLimit] = useState<string>('5');
     const [connected, setConnected] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('');
-    const [messages, setMessages] = useState<Message[]>([]); // Corregido: Eliminado "Fleming"
+    const [messages, setMessages] = useState<Message[]>([]);
     const [hostInfo, setHostInfo] = useState<HostInfo | null>(null);
     const [userCount, setUserCount] = useState<number>(0);
     const [roomLimit, setRoomLimit] = useState<number>(0);
@@ -45,14 +45,6 @@ export const Chat: React.FC = () => {
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
         }
     }, [messages]);
-
-    // Verificar sala activa en localStorage
-    useEffect(() => {
-        const storedRoom = localStorage.getItem('currentRoom');
-        if (storedRoom) {
-            setRoomPin(storedRoom);
-        }
-    }, []);
 
     // Conexión al servidor Socket.IO
     useEffect(() => {
@@ -80,11 +72,16 @@ export const Chat: React.FC = () => {
             console.error("Error de conexión por IP:", data.error);
             setConnectionError(data.error);
             setConnected(false);
-            // Resetear estado para evitar intentos adicionales
+            // Resetear completamente al estado inicial
             setNickname('');
             setRoomPin('');
+            setMessages([]);
+            setUserCount(0);
+            setRoomLimit(0);
             localStorage.removeItem('currentRoom');
-            alert(data.error); // Mostrar alerta al usuario
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
         });
 
         socketRef.current.on('host_info', (data: HostInfo) => {
@@ -94,7 +91,7 @@ export const Chat: React.FC = () => {
 
         socketRef.current.on('receive_message', (data: Message) => {
             console.log("Mensaje recibido:", data);
-            setMessages((prev: Message[]) => [...prev, data]); // Tipado explícito para prev
+            setMessages((prev: Message[]) => [...prev, data]);
         });
 
         socketRef.current.on('user_count', ({ count, limit }: { count: number, limit: number }) => {
@@ -125,7 +122,7 @@ export const Chat: React.FC = () => {
         setNickname(nick);
         setTempNickname('');
         setError('');
-        setConnectionError(''); // Limpiar error de conexión al intentar de nuevo
+        setConnectionError(''); // Limpiar error al intentar de nuevo
     };
 
     const createRoom = () => {
@@ -134,6 +131,7 @@ export const Chat: React.FC = () => {
             setError('Límite inválido (1-50)');
             return;
         }
+        if (!socketRef.current) return;
         socketRef.current.emit('create_room', { limit }, (response: any) => {
             if (response.success) {
                 setShowCreateRoom(false);
@@ -149,6 +147,7 @@ export const Chat: React.FC = () => {
             setError('El PIN debe ser de 6 dígitos');
             return;
         }
+        if (!socketRef.current) return;
         socketRef.current.emit('join_room', { pin: joinPin }, (response: any) => {
             if (response.success) {
                 setRoomPin(response.pin);
@@ -170,7 +169,7 @@ export const Chat: React.FC = () => {
             message: message.trim(),
         };
         socketRef.current.emit('send_message', msg);
-        setMessages((prev: Message[]) => [...prev, msg]); // Tipado explícito para prev
+        setMessages((prev: Message[]) => [...prev, msg]);
         setMessage('');
         setError('');
     };
@@ -218,7 +217,7 @@ export const Chat: React.FC = () => {
         );
     }
 
-    // Pantalla de crear/unirse a sala
+    // Pantalla de crear/unirse a sala (obligatoria después del nickname)
     if (!roomPin) {
         if (showCreateRoom) {
             return (
@@ -296,7 +295,7 @@ export const Chat: React.FC = () => {
                     {messages.length === 0 ? (
                         <p className="no-messages">No hay mensajes aún</p>
                     ) : (
-                        messages.map((m: Message, i: number) => ( // Tipado explícito para m e i
+                        messages.map((m: Message, i: number) => (
                             <p
                                 key={i}
                                 className={`message ${m.autor === nickname ? 'my-message' : 'other-message'}`}

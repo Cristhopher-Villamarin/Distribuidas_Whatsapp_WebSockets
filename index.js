@@ -26,7 +26,7 @@ const io = new Server(server, {
         credentials: true
     },
     transports: ['websocket', 'polling'],
-    pingTimeout: 30000, // Reducido para limpiar conexiones más rápido
+    pingTimeout: 30000,
 });
 
 // Almacenamiento de salas, sockets e IPs
@@ -68,7 +68,6 @@ app.get('/', (req, res) => {
 
 // Manejo de conexiones Socket.IO
 io.on('connection', (socket) => {
-    // Obtener IP del cliente
     let clientIp = socket.handshake.address.replace('::ffff:', '');
     if (clientIp === '127.0.0.1' || clientIp === '::1') {
         clientIp = localIPs[0] || clientIp;
@@ -84,16 +83,12 @@ io.on('connection', (socket) => {
         return;
     }
 
-    // Registrar la IP del cliente
     clientIps.set(clientIp, socket.id);
 
     // Enviar información del host
     try {
         if (clientIp === '127.0.0.1' || clientIp === '::1') {
-            socket.emit('host_info', { 
-                ip: clientIp, 
-                hostname: os.hostname() || 'localhost' 
-            });
+            socket.emit('host_info', { ip: clientIp, hostname: os.hostname() || 'localhost' });
         } else {
             dns.reverse(clientIp, (err, hostnames) => {
                 const hostname = err ? (os.hostname() || clientIp) : hostnames[0];
@@ -102,15 +97,11 @@ io.on('connection', (socket) => {
         }
     } catch (error) {
         console.error('Error al resolver el hostname:', error);
-        socket.emit('host_info', { 
-            ip: clientIp, 
-            hostname: os.hostname() || 'unknown-host' 
-        });
+        socket.emit('host_info', { ip: clientIp, hostname: os.hostname() || 'unknown-host' });
     }
 
     // Crear sala
     socket.on('create_room', ({ limit }, callback) => {
-        // Verificar IP nuevamente para evitar condiciones de carrera
         if (clientIps.get(clientIp) !== socket.id) {
             callback({ success: false, error: 'Este dispositivo ya está conectado a otra sala.' });
             socket.disconnect(true);
@@ -133,7 +124,6 @@ io.on('connection', (socket) => {
 
     // Unirse a sala
     socket.on('join_room', ({ pin }, callback) => {
-        // Verificar IP nuevamente
         if (clientIps.get(clientIp) !== socket.id) {
             callback({ success: false, error: 'Este dispositivo ya está conectado a otra sala.' });
             socket.disconnect(true);
@@ -182,7 +172,6 @@ io.on('connection', (socket) => {
                 console.log(`Sala ${pin} eliminada por inactividad`);
             }
         }
-        // Eliminar la IP del registro
         if (clientIps.get(clientIp) === socket.id) {
             clientIps.delete(clientIp);
         }
