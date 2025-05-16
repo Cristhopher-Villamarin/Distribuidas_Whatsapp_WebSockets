@@ -7,7 +7,9 @@ import { Button } from 'primereact/button';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+import './Chat.css';
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></link>
 const SOCKET_SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:3001";
 
 interface Message {
@@ -193,28 +195,30 @@ export const Chat: React.FC = () => {
     };
 
     // Pantalla de ingreso de nickname
-    if (!nickname) {
+            if (!nickname) {
         return (
             <div className="app">
                 <Card title="Bienvenido al Chat">
-                    {connectionError && <div className="error-message">{connectionError}</div>}
-                    <div className="p-fluid">
-                        <div className="p-field p-mb-3">
-                            <label htmlFor="txtNickname">Nickname</label>
-                            <InputText
-                                id="txtNickname"
-                                value={tempNickname}
-                                onChange={(e) => setTempNickname(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleNickname()}
-                                placeholder="Ejm. Jerez123"
+                    <div className="p-card-content">
+                        {connectionError && <div className="error-message">{connectionError}</div>}
+                        <div className="p-fluid">
+                            <div className="p-field p-mb-3">
+                                <label htmlFor="txtNickname">Ingrese su usuario:</label>
+                                <InputText
+                                    id="txtNickname"
+                                    value={tempNickname}
+                                    onChange={(e) => setTempNickname(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleNickname()}
+                                    placeholder="Ejm. Jerez123"
+                                />
+                            </div>
+                            {error && <div className="error-message">{error}</div>}
+                            <Button
+                                label="Ingresar"
+                                icon="pi pi-sign-in"
+                                onClick={handleNickname}
                             />
                         </div>
-                        {error && <div className="error-message">{error}</div>}
-                        <Button
-                            label="Ingresar"
-                            icon="pi pi-sign-in"
-                            onClick={handleNickname}
-                        />
                     </div>
                 </Card>
             </div>
@@ -279,10 +283,12 @@ export const Chat: React.FC = () => {
         );
     }
 
+    
     // Pantalla de chat
-    return (
-        <div className="app">
-            <Card title={`Chat - Sala ${roomPin}`}>
+      return (
+    <div className="app">
+        <Card title={`Chat - Sala ${roomPin}`}>
+            <div className="p-card-content">
                 {connectionError && (
                     <div className="error-message">{connectionError}</div>
                 )}
@@ -300,13 +306,13 @@ export const Chat: React.FC = () => {
                         <p className="no-messages">No hay mensajes aún</p>
                     ) : (
                         messages.map((m: Message, i: number) => (
-                            <p
+                            <div
                                 key={i}
                                 className={`message ${m.autor === nickname ? 'my-message' : 'other-message'}`}
                             >
-                                <strong>{m.autor}: </strong>
-                                {m.message}
-                            </p>
+                                <strong>{m.autor}</strong>
+                                <span>{m.message}</span>
+                            </div>
                         ))
                     )}
                 </div>
@@ -324,7 +330,6 @@ export const Chat: React.FC = () => {
                         placeholder="Escribe tu mensaje..."
                     />
                     <Button
-                        label="Enviar"
                         icon="pi pi-send"
                         onClick={sendMessage}
                         disabled={!connected}
@@ -340,7 +345,8 @@ export const Chat: React.FC = () => {
                     onClick={leaveRoom}
                     className="p-button-danger"
                 />
-            </Card>
-        </div>
-    );
+            </div>
+        </Card>
+    </div>
+);
 };
