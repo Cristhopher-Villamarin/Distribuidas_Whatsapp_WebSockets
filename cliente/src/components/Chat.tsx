@@ -41,14 +41,12 @@ export const Chat: React.FC = () => {
     const socketRef = useRef<any>(null);
     const messageContainerRef = useRef<HTMLDivElement>(null);
 
-    // Scroll al último mensaje
     useEffect(() => {
         if (messageContainerRef.current) {
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
         }
     }, [messages]);
 
-    // Conexión al servidor Socket.IO
     useEffect(() => {
     if (!nickname) return;
 
@@ -74,7 +72,6 @@ export const Chat: React.FC = () => {
         console.error("Error de conexión por IP:", data.error);
         setConnectionError(data.error);
         setConnected(false);
-        // Resetear completamente al estado inicial
         setNickname('');
         setRoomPin('');
         setMessages([]);
@@ -93,7 +90,6 @@ export const Chat: React.FC = () => {
 
     socketRef.current.on('receive_message', (data: Message) => {
         console.log("Mensaje recibido:", data);
-        // Solo agregar el mensaje si no es del usuario actual
         if (data.autor !== nickname) {
             setMessages((prev: Message[]) => [...prev, data]);
         }
@@ -128,7 +124,7 @@ export const Chat: React.FC = () => {
         setNickname(nick);
         setTempNickname('');
         setError('');
-        setConnectionError(''); // Limpiar error al intentar de nuevo
+        setConnectionError(''); 
     };
 
     const createRoom = () => {
@@ -194,7 +190,6 @@ export const Chat: React.FC = () => {
         setConnectionError('');
     };
 
-    // Pantalla de ingreso de nickname
             if (!nickname) {
         return (
             <div className="app">
@@ -225,7 +220,6 @@ export const Chat: React.FC = () => {
         );
     }
 
-    // Pantalla de crear/unirse a sala (obligatoria después del nickname)
     if (!roomPin) {
         if (showCreateRoom) {
             return (
@@ -284,7 +278,6 @@ export const Chat: React.FC = () => {
     }
 
     
-    // Pantalla de chat
       return (
     <div className="app">
         <Card title={`Chat - Sala ${roomPin}`}>

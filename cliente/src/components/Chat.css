@@ -23,13 +23,12 @@
 
 body {
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #075e54 0%, #128c7e 100%); /* Degradado detrás del patrón */
+  background: linear-gradient(135deg, #075e54 0%, #128c7e 100%); 
   min-height: 200vh;
   overflow: hidden;
   
 }
 
-/* Capa para el patrón de WhatsApp */
 body::before {
   content: '';
   position: fixed;
@@ -37,8 +36,8 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #075e54 0%, #128c7e 100%); /* Degradado detrás del patrón */
-  opacity: 0.3; /* Suaviza el patrón para que el degradado sea visible */
+  background: linear-gradient(135deg, #075e54 0%, #128c7e 100%); 
+  opacity: 0.3; 
   z-index: 1;
 }
 
@@ -50,14 +49,14 @@ body::before {
   flex-direction: column;
   min-height: 100vh;
   width: 200vw;
-  background: rgba(229, 221, 213, 0.2); /* Fondo semitransparente para el difuminado */
+  background: rgba(229, 221, 213, 0.2); 
   backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur); /* Para compatibilidad con Safari */
+  -webkit-backdrop-filter: var(--blur); 
 }
 
 @supports not (backdrop-filter: blur(12px)) {
   .app {
-    background: rgba(229, 221, 213, 0.7); /* Fallback para navegadores sin soporte */
+    background: rgba(229, 221, 213, 0.7); 
   }
 }
 
@@ -69,8 +68,8 @@ body::before {
   display: flex;
   flex-direction: column;
   animation: slideIn 0.5s ease-out;
-  width: 150%; /* Asegura que ocupe todo el ancho disponible */
-  max-width: none; /* Elimina cualquier restricción de ancho máximo */
+  width: 150%; 
+  max-width: none; 
   margin: 0;
 }
 
@@ -348,7 +347,7 @@ body::before {
 
   @media (max-width: 480px) {
   .app {
-    width: 100vw; /* Usar el ancho completo */
+    width: 100vw; 
     padding: 0.5rem;
   }
 
