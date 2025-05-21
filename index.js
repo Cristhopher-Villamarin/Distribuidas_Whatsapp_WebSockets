@@ -8,7 +8,7 @@ const os = require('os');
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://192.168.1.7:3000'];
+const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://10.40.17.199:3000'];
 app.use(cors({
     origin: corsOrigin,
     credentials: true
@@ -28,12 +28,12 @@ const io = new Server(server, {
     pingTimeout: 30000,
 });
 
-// Almacenamiento de salas, sockets e IPs
-const rooms = new Map(); // Map<PIN, { limit: number, users: Set<string>, creator: string }>
-const socketRooms = new Map(); // Map<socket.id, pin>
-const clientIps = new Map(); // Map<clientIp, socket.id>
 
-// Generar PIN único de 6 dígitos
+const rooms = new Map(); 
+const socketRooms = new Map(); 
+const clientIps = new Map(); 
+
+
 function generateUniquePIN() {
     let pin;
     do {
@@ -42,7 +42,6 @@ function generateUniquePIN() {
     return pin;
 }
 
-// Obtener IPs locales para depuración
 function getLocalIPs() {
     const interfaces = os.networkInterfaces();
     const addresses = [];
