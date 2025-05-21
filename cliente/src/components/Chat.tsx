@@ -231,8 +231,23 @@ export const Chat: React.FC = () => {
                                 <InputText
                                     id="participantLimit"
                                     value={participantLimit}
-                                    onChange={(e) => setParticipantLimit(e.target.value)}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (/^\d*$/.test(value)) {
+                                            setParticipantLimit(value);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                                                            
+                                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "Enter") {
+                                            e.preventDefault();
+                                        }
+                                        if (e.key === "Enter") {
+                                            createRoom();
+                                        }
+                                    }}
                                     placeholder="Ejm. 5"
+                                    maxLength={2}
                                 />
                             </div>
                             {error && <div className="error-message">{error}</div>}
