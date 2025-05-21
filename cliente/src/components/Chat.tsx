@@ -259,8 +259,16 @@ export const Chat: React.FC = () => {
                                 id="joinPin"
                                 value={joinPin}
                                 onChange={(e) => setJoinPin(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && joinRoom()}
+                                onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                joinRoom();
+                            }
+                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "Enter") {
+                                e.preventDefault();
+                            }
+                        }}
                                 placeholder="Ejm. 123456"
+                                maxLength={6}
                             />
                         </div>
                         {error && <div className="error-message">{error}</div>}
